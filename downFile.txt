@@ -1,0 +1,8 @@
+#From Jupyter notebook home page. Click New -> Terminal
+#To reduce clutter i'd recommend making and entering a folder first.
+#Then run the following from the command line.
+#This won't download all the files, but will get most of them.
+#And some other extraneous files you can delete.
+
+wget --content-disposition https://ndownloader.figshare.com/files/{9636634..9636400}
+wget --content-disposition https://ndownloader.figshare.com/files/{12400370..12400412}
