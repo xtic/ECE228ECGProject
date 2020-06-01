@@ -1,0 +1,380 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 80,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[[-18.   -3.6  -6.6 ...  -9.   -7.2  -2.4]\n",
+      " [-19.2  -0.   -8.4 ...  -8.4 -11.4  -9. ]\n",
+      " [-12.    1.8  -1.2 ...   2.4   3.6   5.4]\n",
+      " ...\n",
+      " [ -6.    5.4   3.  ...   5.4   4.2   3.6]\n",
+      " [ -8.4   7.2   3.  ...   4.8   6.6   6. ]\n",
+      " [ -1.2  -1.2  -1.8 ...  -0.   -0.   -0. ]]\n",
+      "Number of samples: 621892\n",
+      "Dataset ID: 201705081338.32BEA9DD\n",
+      "Channel names: [array(['Fp1'], dtype='<U3') array(['Fp2'], dtype='<U3')\n",
+      " array(['F3'], dtype='<U2') array(['F4'], dtype='<U2')\n",
+      " array(['C3'], dtype='<U2') array(['C4'], dtype='<U2')\n",
+      " array(['P3'], dtype='<U2') array(['P4'], dtype='<U2')\n",
+      " array(['O1'], dtype='<U2') array(['O2'], dtype='<U2')\n",
+      " array(['A1'], dtype='<U2') array(['A2'], dtype='<U2')\n",
+      " array(['F7'], dtype='<U2') array(['F8'], dtype='<U2')\n",
+      " array(['T3'], dtype='<U2') array(['T4'], dtype='<U2')\n",
+      " array(['T5'], dtype='<U2') array(['T6'], dtype='<U2')\n",
+      " array(['Fz'], dtype='<U2') array(['Cz'], dtype='<U2')\n",
+      " array(['Pz'], dtype='<U2')]\n"
+     ]
+    }
+   ],
+   "source": [
+    "## This file is used to split data into series of arrays and their corresponding MI task.\n",
+    "import scipy.io as sio\n",
+    "import matplotlib.pyplot as plt\n",
+    "import numpy as np\n",
+    "file = sio.loadmat('dataset/CLA/CLA-SubjectJ-170508-3St-LRHand-Inter.mat') #replace with .mat file name\n",
+    "header=file['__header__']\n",
+    "version=file['__version__']\n",
+    "glob=file['__globals__']\n",
+    "#ans=file['ans']\n",
+    "\n",
+    "\n",
+    "#x=file['x']\n",
+    "o=file['o'][0][0]\n",
+    "data=o['data']\n",
+    "data = np.transpose(data)\n",
+    "print(data)\n",
+    "nS=o['nS'][0][0]\n",
+    "#values of structure seem to be 2D numpy arrays, if originally a scalar in Matlab.\n",
+    "#use [0][0] to get scalar.\n",
+    "print(\"Number of samples: {numSamples}\".format(numSamples=nS))\n",
+    "test=o['id'][0] #id value became a 1D array of size 1 for some reason. use [0] to get value\n",
+    "print(\"Dataset ID: {id}\".format(id=test))\n",
+    "chnames=o['chnames'][:,0] #[:,0] converts from 2D array back to 1D array\n",
+    "print(\"Channel names: {channelNames}\".format(channelNames=chnames))\n",
+    "markers = o['marker']\n",
+    "## The markers are all still individual arrays of size 1x1, so we convert them to an array with single values\n",
+    "markersArray = []\n",
+    "for marker in markers:\n",
+    "    markersArray.append(marker[0])\n",
+    "markersArray = np.asarray(markersArray)\n",
+    "#For this dataset, the markers are 0, 1, or 2.\n",
+    "# 1 - Left Hand MI, 2 - Right Hand MI, 3 - Passive State, 0 - Rest (???)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 81,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Number of index changes: 1800\n",
+      "Number of arrays in data split: 1800\n",
+      "Number of marker targets: 1800\n"
+     ]
+    }
+   ],
+   "source": [
+    "## Find the starting indeces where the marker changes\n",
+    "changeIdxs = np.where(np.transpose(markersArray)[:-1] != np.transpose(markersArray)[1:])[0]\n",
+    "print(\"Number of index changes: {idxChanges}\".format(idxChanges=changeIdxs.shape[0]))\n",
+    "## Split the data so that it has its matching marker\n",
+    "dataSplit = np.array_split(data, changeIdxs[:-1], axis=1)\n",
+    "splitCount = 0\n",
+    "for splitData in dataSplit:\n",
+    "    splitCount += 1\n",
+    "print(\"Number of arrays in data split: {num}\".format(num=splitCount))\n",
+    "## Retrieve the marker values for each of the change indeces (changeIdxs)\n",
+    "markerTargets = markersArray[changeIdxs];\n",
+    "print(\"Number of marker targets: {numTargets}\".format(numTargets=markerTargets.shape[0]))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 82,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "## To Apply CSP, we first only get the indeces for MI tasks 1 and 2 (left and right hand, respectively.)\n",
+    "LeftIdxs = np.where(markerTargets == 1)\n",
+    "RightIdxs = np.where(markerTargets == 2)\n",
+    "numLeftIdx = LeftIdxs[0].shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 83,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(288, 170, 22)"
+      ]
+     },
+     "execution_count": 83,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "leftData = [];\n",
+    "for leftIndex in LeftIdxs[0]:\n",
+    "    #print(leftIndex)\n",
+    "    #print(\"Dimensions of index: {ind}\".format(ind=dataSplit[leftIndex].shape))\n",
+    "    if(dataSplit[leftIndex].shape[1] != 170):\n",
+    "        continue\n",
+    "    else:\n",
+    "        leftData.append(np.transpose(dataSplit[leftIndex]))\n",
+    "leftData = np.asarray(leftData)\n",
+    "leftData.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 84,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(327, 170, 22)"
+      ]
+     },
+     "execution_count": 84,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "rightData = [];\n",
+    "for rightIndex in RightIdxs[0]:\n",
+    "    #print(leftIndex)\n",
+    "    #print(\"Dimensions of index: {ind}\".format(ind=dataSplit[leftIndex].shape))\n",
+    "    if(dataSplit[rightIndex].shape[1] != 170):\n",
+    "        continue\n",
+    "    else:\n",
+    "        rightData.append(np.transpose(dataSplit[rightIndex]))\n",
+    "rightData = np.asarray(rightData)\n",
+    "rightData.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 85,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "## Only keep the top 288 samples, so that left and right data are equal\n",
+    "rightDataSub = rightData[1:289]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 86,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "lrData Shape: (576, 170, 22)\tmarkerTargets Shape: (576, 1)\n"
+     ]
+    }
+   ],
+   "source": [
+    "#Construct the target array and merge the data\n",
+    "leftTargets = np.tile(np.array([0]),(288,1))\n",
+    "rightTargets = np.tile(np.array([1]), (288,1))\n",
+    "markerTargets = np.vstack((leftTargets, rightTargets))\n",
+    "lrData = np.vstack((leftData, rightDataSub))\n",
+    "\n",
+    "#Sanity Check\n",
+    "print(\"lrData Shape: {arg1}\\tmarkerTargets Shape: {arg2}\".format(arg1=lrData.shape, arg2=markerTargets.shape))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 87,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "## Construct LSTM using Tensorflow + Keras\n",
+    "# Import Libraries\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "from sklearn.utils import shuffle\n",
+    "from sklearn.svm import SVC\n",
+    "from sklearn.metrics import confusion_matrix\n",
+    "from sklearn.metrics import accuracy_score"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 88,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#reshape to be compatible with SVM\n",
+    "lrData = lrData.reshape(lrData.shape[0], -1) #reshape so that each row is an action. And contains all the channels and voltages\n",
+    "markerTargets = markerTargets.reshape(-1) #reshape to vector"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 89,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "## Shuffle the data\n",
+    "lrData, markerTargets = shuffle(lrData, markerTargets, random_state=0)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 90,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "## Split into train and test sets\n",
+    "lrDataTrain, lrDataTest, markerTargetsTrain, markerTargetsTest = train_test_split(lrData, markerTargets, test_size=0.3, random_state=1)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 97,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# SVM Classifier\n",
+    "clf = SVC(kernel = 'rbf', random_state = 42)\n",
+    "clf.fit(lrDataTrain, markerTargetsTrain)\n",
+    "\n",
+    "trainPerc=clf.score(lrDataTrain, markerTargetsTrain)\n",
+    "testPerc=clf.score(lrDataTest, markerTargetsTest)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 98,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "#################################\n",
+      "#################################\n",
+      "Training Performance:\n",
+      "Percent Accuracy: 99.504%\n",
+      "#################################\n",
+      "#################################\n",
+      "Testing Performance:\n",
+      "Percent Accuracy: 90.173%\n",
+      "#################################\n",
+      "#################################\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(\"#################################\")\n",
+    "print(\"#################################\")\n",
+    "print(\"Training Performance:\\nPercent Accuracy: {:.3f}%\".format(trainPerc*100))\n",
+    "print(\"#################################\")\n",
+    "print(\"#################################\")\n",
+    "print(\"Testing Performance:\\nPercent Accuracy: {:.3f}%\".format(testPerc*100))\n",
+    "print(\"#################################\")\n",
+    "print(\"#################################\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 93,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[0 1 0 1 0 1 1 1 1 0 1 1 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 1\n",
+      " 0 1 1 1 0 0 1 1 0 1 1 1 1 1 1 1 1 0 1 1 0 0 0 1 1 0 1 1 1 1 1 1 0 1 0 0 1\n",
+      " 0 0 0 1 0 1 0 1 1 0 0 0 1 0 0 1 1 1 1 0 1 0 0 1 0 1 0 1 0 0 1 0 0 1 0 1 1\n",
+      " 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 1 0 0 0 0 1 1 0 1 1 0 1 1 0 1 0 1 1 1 0 1\n",
+      " 0 0 1 1 0 1 0 0 0 1 1 1 0 1 1 1 0 0 1 0 0 1 0 0 0 1 0 1 1 0 0 1 0 1 1 1 1\n",
+      " 1 0 0 1 1 0 0 0 1 1 0 1 0 1 0 1 1 1 1 0 1 1 1 0 1 0 1 0 1 0 0 0 0 1 1 1 0\n",
+      " 1 1 0 1 1 1 0 1 0 0 0 0 1 1 0 0 0 1 1 0 0 0 0 1 0 1 1 1 1 1 0 0 1 0 1 1 0\n",
+      " 1 1 0 1 0 0 1 1 0 1 0 1 1 1 1 1 1 0 1 0 0 1 1 1 0 0 0 0 1 1 0 0 0 0 0 0 1\n",
+      " 1 1 1 1 0 0 1 0 0 0 1 0 1 0 1 1 0 0 1 1 0 0 0 1 1 0 1 0 0 0 1 1 0 1 0 0 1\n",
+      " 0 0 0 0 0 1 0 0 0 1 1 0 0 1 1 0 1 1 1 0 0 0 0 0 0 0 0 1 0 0 1 1 0 1 0 0 1\n",
+      " 1 1 0 0 0 0 0 0 0 0 0 0 1 0 1 1 1 1 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0]\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(markerTargetsTrain)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 94,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[0 1 0 1 0 1 1 1 1 0 1 1 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 1\n",
+      " 0 1 1 1 0 0 1 1 0 1 1 1 1 1 1 1 1 0 1 1 0 0 0 1 1 0 1 1 1 1 1 1 0 1 0 0 1\n",
+      " 0 0 0 1 0 1 0 1 1 0 0 0 1 0 0 1 1 1 1 0 1 0 0 1 0 1 0 1 0 0 1 0 0 1 0 1 1\n",
+      " 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 1 0 0 0 0 1 1 0 1 1 0 1 1 0 1 0 1 1 1 0 1\n",
+      " 0 0 1 1 0 1 0 0 0 1 1 1 0 1 1 1 0 0 1 0 0 1 0 0 0 1 0 1 1 0 0 1 0 1 1 1 1\n",
+      " 1 0 0 1 1 0 0 0 1 1 0 1 0 1 0 1 1 1 1 0 1 1 1 0 1 0 1 0 1 0 0 0 0 1 1 1 0\n",
+      " 1 1 0 1 1 1 0 1 0 0 0 0 1 1 0 0 0 1 1 0 0 0 0 1 0 1 1 1 1 1 0 0 1 0 1 1 0\n",
+      " 1 1 0 1 0 0 1 1 0 1 0 1 1 1 1 1 1 0 1 0 0 1 1 1 0 0 0 0 1 1 0 0 0 0 0 0 1\n",
+      " 1 1 1 1 0 0 1 0 0 0 1 0 1 0 1 1 0 0 1 1 0 0 0 1 1 0 1 0 0 0 1 1 0 1 0 0 1\n",
+      " 0 0 0 0 0 1 0 0 0 1 1 0 0 1 1 0 1 1 1 0 0 0 0 0 0 0 1 1 0 0 1 1 0 1 0 0 1\n",
+      " 1 1 0 0 0 0 0 0 0 0 0 0 1 0 1 1 1 1 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0]\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(clf.predict(lrDataTrain))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "py37-tf2",
+   "language": "python",
+   "name": "py37-tf2"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
