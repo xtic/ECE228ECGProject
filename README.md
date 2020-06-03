@@ -8,8 +8,10 @@
 
 05.21.2020 - Added jupyter notebook that uses an LSTM-based RNN to perform time-series prediction of MI tasks. - Daniel Valencia
 
-05.26.2020 - Added two new jupyet notebooks that use a publically available implementation of CSP to generate the transformation filters that are then applied on the data. The notebook 'LSTM_Test_TwoClass_wCSP' is an extension of the previous 'LSTM_Test_TwoClass' notebook but it adds CSP and shows the performance of the same LSTM model. The new notebook 'LSTM_Test_5F' shows the testing results of the same sized LSTM on the Five Finger dataset, both with and without CSP. Using CSP shows performance increases in the 30% range for 5F, and smaller (~5-10%) for the CLA dataset. - Daniel Valencia
+05.26.2020 - Added two new jupyter notebooks that use a publically available implementation of CSP to generate the transformation filters that are then applied on the data. The notebook 'LSTM_Test_TwoClass_wCSP' is an extension of the previous 'LSTM_Test_TwoClass' notebook but it adds CSP and shows the performance of the same LSTM model. The new notebook 'LSTM_Test_5F' shows the testing results of the same sized LSTM on the Five Finger dataset, both with and without CSP. Using CSP shows performance increases in the 30% range for 5F, and smaller (~5-10%) for the CLA dataset. - Daniel Valencia
 
 05.30.2020 - Added 'LSTM_Test_ThreeClass_wCSP.ipynb' which tests for left, right, and no signals
 
 6.01.2020  - Added 'Preprocessing_Denoising.ipynb' which cleans EEG data based on wavelet-BSS algorithm.
+
+06.02.2020 - Added LSTM_5F_All_Single, LSTM_CLA_All_Single, and LSTM_HaLT_All_Single notebooks. These will iterate through all of the datasets for that particular type, train a different network for each .mat file, and produce a CSV with the results of the LSTMs results with and without CSP as a pre-processing step. Also added the directory Results_LSTM to show results of the LSTM trained in the notebooks above and gives a relative performance measure. It lists the results for each .mat file and shows the accuracy of the model on the training and test subsets. - Daniel Valencia
