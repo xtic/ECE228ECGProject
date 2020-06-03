@@ -15,3 +15,5 @@
 6.01.2020  - Added 'Preprocessing_Denoising.ipynb' which cleans EEG data based on wavelet-BSS algorithm.
 
 06.02.2020 - Added LSTM_5F_All_Single, LSTM_CLA_All_Single, and LSTM_HaLT_All_Single notebooks. These will iterate through all of the datasets for that particular type, train a different network for each .mat file, and produce a CSV with the results of the LSTMs results with and without CSP as a pre-processing step. Also added the directory Results_LSTM to show results of the LSTM trained in the notebooks above and gives a relative performance measure. It lists the results for each .mat file and shows the accuracy of the model on the training and test subsets. - Daniel Valencia
+
+6.03.20  - Added 'Preprocessing_LSTM.ipnyb' which uses the cleaned EEG data via wavelet-BSS for the LSTM.  Dataset chosen was LR dataset but modified labels to 6 labels based on the signal change.  
