@@ -24,7 +24,9 @@
 # Submission Notes
 How to run the final notebooks, LSTM_Final_Notebook and SVM_Final_Notebook.
 1. First, you need to make sure that you have downloaded the dataset to your local machine after you've cloned this Git repository. Use the following two commands from a linux shell to obtain the datasets.
+
 	wget --content-disposition https://ndownloader.figshare.com/files/{9636634..9636400}
+	
 	wget --content-disposition https://ndownloader.figshare.com/files/{12400370..12400412}
 
 2. Next, make sure you have all of the python libraries installed. Namely, you will need tensorflow, matplotlib, numpy, scikit learn, PyWavelets, and SciPy.
