@@ -26,15 +26,19 @@ How to run the final notebooks, LSTM_Final_Notebook and SVM_Final_Notebook.
 1. First, you need to make sure that you have downloaded the dataset to your local machine after you've cloned this Git repository. Use the following two commands from a linux shell to obtain the datasets.
 
 	wget --content-disposition https://ndownloader.figshare.com/files/{9636634..9636400}
-	
+
 	wget --content-disposition https://ndownloader.figshare.com/files/{12400370..12400412}
 
 2. Next, make sure you have all of the python libraries installed. Namely, you will need tensorflow, matplotlib, numpy, scikit learn, PyWavelets, and SciPy.
 
 3. Notes when running the LSTM_Final_Notebook and SVM_Final_Notebook:
+
 	When you run this notebook, you will be prompted for the following things in this order:
+
 	3.1. Enter the desired paradigm you wish to test. Valid options are 5F, HALT, or CLA.
+
 	3.2. Enter the relative path to the datasets. This should be the path to the directory that contains the downloaded dataset in step 1 above. For example, your relative path might be ../../../datasets/5F_Data/. Make sure to include the forward slash at the end of your path directory.
+
 	After you enter these details, the notebook will run on its own. First it will parse the datasets and perform any pre-processing, then it will create the model and train/evaluate it using no pre-processing, CSP pre-processing, BSS. You can disable or change the dropout percentage by changing the lines 'enableDropout=True' and 'dropoutPercentage=0.3', respectively. These values do nothing for the SVM notebook.
 
 Note: There are a number of other notebooks used during the development of the two final notebooks. Feel free to check them out, but we cannot guarantee that they will run properly. We have left them available for entirety. One notebook that might be interesting to you is 'Pre-processing_Denoising.ipynb', which details and shows how the Wavelet-BSS algorithm works. It is nicely formatted and makes it clear the results of Wavelet-BSS on the raw data.
