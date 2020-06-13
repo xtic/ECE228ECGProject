@@ -19,3 +19,19 @@
 6.03.20  - Added 'Preprocessing_LSTM.ipnyb' which uses the cleaned EEG data via wavelet-BSS for the LSTM.  Dataset chosen was LR dataset but modified labels to 6 labels based on the signal change.  -Nick Wong
 
 06.09.2020 - Added 'LSTM_Final_Notebook.ipynb', which allows the user to load all of the datasets for a particular paradigm and combine them into a single test set for all of the subjects together. Testing results have improved greatly. Also added a helper file 'helperFunctions.py' to help consolidate some commonly used code. - Daniel Valencia
+
+
+# Submission Notes
+How to run the final notebooks, LSTM_Final_Notebook and SVM_Final_Notebook.
+1. First, you need to make sure that you have downloaded the dataset to your local machine after you've cloned this Git repository. Use the following two commands from a linux shell to obtain the datasets.
+	wget --content-disposition https://ndownloader.figshare.com/files/{9636634..9636400}
+	wget --content-disposition https://ndownloader.figshare.com/files/{12400370..12400412}
+
+2. Next, make sure you have all of the python libraries installed. Namely, you will need tensorflow, matplotlib, numpy, scikit learn, PyWavelets, and SciPy.
+
+3. Notes when running the LSTM_Final_Notebook and SVM_Final_Notebook:
+	When you run this notebook, you will be prompted for the following things in this order:
+	3.1. Enter the desired paradigm you wish to test. Valid options are 5F, HALT, or CLA.
+	3.2. Enter the relative path to the datasets. This should be the path to the directory that contains the downloaded dataset in step 1 above. For example, your relative path might be ../../../datasets/5F_Data/. Make sure to include the forward slash at the end of your path directory.
+	After you enter these details, the notebook will run on its own. First it will parse the datasets and perform any pre-processing, then it will create the model and train/evaluate it using no pre-processing, CSP pre-processing, BSS. You can disable or change the dropout percentage by changing the lines 'enableDropout=True' and 'dropoutPercentage=0.3', respectively. These values do nothing for the SVM notebook.
+
