@@ -875,7 +875,7 @@ def wavelet_BSS(data):
 
 def GetCombinedData_5F_WBSS(relativeFilePath, shuffleData):
 	fileNames = ['5F-SubjectB-160309-5St-SGLHand-HFREQ.mat','5F-SubjectB-160311-5St-SGLHand-HFREQ.mat',\
-             '5F-SubjectC-160429-5St-SGLHand-HFREQ.mat','5F-SubjectE-160321-5St-SGLHand-HFREQ.mat',\
+			 '5F-SubjectC-160429-5St-SGLHand-HFREQ.mat','5F-SubjectE-160321-5St-SGLHand-HFREQ.mat',\
 			 '5F-SubjectF-160210-5St-SGLHand-HFREQ.mat','5F-SubjectG-160413-5St-SGLHand-HFREQ.mat',\
 			 '5F-SubjectG-160428-5St-SGLHand-HFREQ.mat','5F-SubjectH-160804-5St-SGLHand-HFREQ.mat',\
 			 '5F-SubjectI-160719-5St-SGLHand-HFREQ.mat','5F-SubjectI-160723-5St-SGLHand-HFREQ.mat'];
@@ -890,12 +890,9 @@ def GetCombinedData_5F_WBSS(relativeFilePath, shuffleData):
 		version=file['__version__']
 		glob=file['__globals__']
 		#ans=file['ans']
-
-
 		#x=file['x']
 		o=file['o'][0][0]
 		data=o['data']
-
 		data = np.transpose(data)
 		data = data[0:21,:];
 
@@ -916,11 +913,10 @@ def GetCombinedData_5F_WBSS(relativeFilePath, shuffleData):
 
 		## Find the starting indeces where the marker changes
 		changeIdxs = np.where(np.transpose(markersArray)[:-1] != np.transpose(markersArray)[1:])[0]
+		markersArray_ica = markersArray.reshape((1,len(markersArray.T)))
 		#print("Number of index changes: {idxChanges}".format(idxChanges=changeIdxs.shape[0]))
 		## Split the data so that it has its matching marker
 		##############wavelet_BSS##############################
-		markersArray_ica = markersArray.reshape((1,len(markersArray.T)))
-
 		data_ica = np.hstack((o['data'],markersArray_ica.T))
 		wavelet_ica = wavelet_BSS(data_ica)
 		wavelet_ica = np.hstack((wavelet_ica,markersArray_ica.T)) #reinclude the markers
@@ -961,11 +957,12 @@ def GetCombinedData_5F_WBSS(relativeFilePath, shuffleData):
 		rI = np.asarray(rI)
 		pI = np.asarray(pI)
 
-		tITargets_ica = np.tile(np.array([1,0,0,0,0],(tI.shape[0],1)))
-		iITargets_ica = np.tile(np.array([0,1,0,0,0],(iI.shape[0],1)))
-		mITargets_ica = np.tile(np.array([0,0,1,0,0],(mI.shape[0],1)))
-		rITargets_ica = np.tile(np.array([0,0,0,1,0],(rI.shape[0],1)))
-		pITargets_ica = np.tile(np.array([0,0,0,0,1],(pI.shape[0],1)))
+
+		tITargets_ica = np.tile(np.array([1,0,0,0,0]),(tI.shape[0],1))
+		iITargets_ica = np.tile(np.array([0,1,0,0,0]),(iI.shape[0],1))
+		mITargets_ica = np.tile(np.array([0,0,1,0,0]),(mI.shape[0],1))
+		rITargets_ica = np.tile(np.array([0,0,0,1,0]),(rI.shape[0],1))
+		pITargets_ica = np.tile(np.array([0,0,0,0,1]),(pI.shape[0],1))
 
 		final_targets_ica = tITargets_ica
 		final_data_ica = tI
@@ -973,7 +970,7 @@ def GetCombinedData_5F_WBSS(relativeFilePath, shuffleData):
 			final_targets_ica = np.vstack((final_targets_ica,st))
 		for stt in [iI,mI,rI,pI]:
 			final_data_ica = np.vstack((final_data_ica,stt))
-		final_data_ica,final_targets_ica = suffle(final_data_ica,final_targets_ica)
+		final_data_ica,final_targets_ica = shuffle(final_data_ica,final_targets_ica)
 
 
 		splitCount = 0
